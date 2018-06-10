@@ -9,12 +9,19 @@ if __name__ == '__main__':
     almacen = Recurso.load_csv('C:/Users/Felipe Cabedo/Desktop/almacen.csv')
     barras = Barra.load_csv('C:/Users/Felipe Cabedo/Desktop/barras.csv')
 
-    r = 0
-    solucion = barras
-    for i in range(len(barras) ** 2):
-        beneficio = App.beneficio(barras, almacen[0])
-        if beneficio > r:
-            r = beneficio
-            solucion = list(barras)
-            print('{}'.format(beneficio))
-        App.mutacion(barras)
+    solucion = App.random_sort(barras)
+    solucion_aux = solucion[:]
+
+    print('numero de barras: {}'.format(len(barras)))
+    print('')
+    print('creando poblacion inicial')
+    print('-' * 80)
+
+    beneficio_aux = 0
+    for i in range(len(barras) * 100):
+        beneficio, n_barras = App.beneficio(solucion, almacen[0])
+        if beneficio > beneficio_aux:
+            beneficio_aux = beneficio
+            solucion_aux = list(solucion)
+            print('[{}] beneficio: {} {}'.format(i, beneficio, n_barras))
+        App.mutacion(solucion)
