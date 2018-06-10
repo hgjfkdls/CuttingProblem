@@ -1,4 +1,5 @@
 import random
+from Solucion import *
 
 
 class App:
@@ -6,29 +7,19 @@ class App:
         ''''''
 
     @staticmethod
-    def beneficio(solucion, barra_almacen):
-        uso_barra = 0
-        uso_total = 0
-        n_barras = 0
-        for barra in solucion:
-            if uso_barra + barra.largo > barra_almacen.largo:
-                if uso_barra == 0:
-                    return 0
-                uso_barra = 0
-                n_barras += 1
-            uso_barra += barra.largo
-            uso_total += barra.largo
-        beneficio = (uso_total * 100) / ((n_barras + 1) * barra_almacen.largo)
-        return beneficio, n_barras
+    def nueva_generacion(poblacion, factor_cruce, factor_mutacion):
+        for i in poblacion.individuos:
+            print(i)
+        aux = poblacion.clone()
+        padres = list()
+        for i in range(0, int(len(poblacion)/2)):
+            index = aux.seleccionar_padre()
+            seleccion = aux.individuos.pop(index)
+            padres.append(seleccion)
+            print('[{}] {} - {}'.format(i, index, seleccion))
 
-    @staticmethod
-    def mutacion(solucion):
-        index_1 = random.randint(0, len(solucion) - 1)
-        index_2 = random.randint(0, len(solucion) - 1)
-        while index_1 == index_2:
-            index_2 = random.randint(0, len(solucion) - 1)
-        solucion[index_1], solucion[index_2] = solucion[index_2], solucion[index_1]
-        return solucion
+
+
 
     @staticmethod
     def permutacion(solucion):
