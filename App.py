@@ -1,5 +1,6 @@
 import random
 
+
 class App:
     def __init__(self):
         ''''''
@@ -16,7 +17,7 @@ class App:
                 n_barras += 1
             uso_barra += barra.largo
             uso_total += barra.largo
-        beneficio = uso_total * 100 / ((n_barras + 1) * barra_almacen.largo)
+        beneficio = (uso_total * 100) / ((n_barras + 1) * barra_almacen.largo)
         return beneficio
 
     @staticmethod

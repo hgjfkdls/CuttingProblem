@@ -1,7 +1,7 @@
 import csv
 
 
-class Almacen:
+class Recurso:
     def __init__(self, id='', descripcion='', largo=0, diametro=0):
         self.id = id
         self.descripcion = descripcion
@@ -17,12 +17,12 @@ class Almacen:
             for row in sr:
                 i += 1
                 if i > 2:
-                    r.append(Almacen.parse(row))
+                    r.append(Recurso.parse(row))
         return r
 
     @staticmethod
     def parse(values=['', '', '0', '0']):
-        return Almacen(
+        return Recurso(
             values[0],
             values[1],
             float(values[2].replace(',', '.')),
