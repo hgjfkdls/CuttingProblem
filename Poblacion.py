@@ -10,6 +10,9 @@ class Poblacion:
         else:
             self.individuos = sorted(individuos, key=lambda s: s.beneficio, reverse=True)
 
+    def ordenar(self):
+        self.individuos = sorted(self.individuos, key=lambda s: s.beneficio, reverse=True)
+
     @staticmethod
     def crear_desde_solucion(solucion, soluciones_maximas, contador=1000):
         individuos = list()
@@ -33,6 +36,7 @@ class Poblacion:
 
     def seleccionar_padre(self):
         rango = self.mejor_individuo().beneficio - self.peor_individuo().beneficio
+        rango = 1 if rango == 0 else rango
         lst = list()
         acumulado = 0
         index = len(self)
