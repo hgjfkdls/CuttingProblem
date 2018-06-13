@@ -31,7 +31,7 @@ class Poblacion:
                 beneficio_aux = individuos[-1].beneficio
                 contador_1 = 0
             solucion_aux.mutar()
-            solucion_aux.calcular()
+            solucion_aux.calcular_beneficio()
         return Poblacion(individuos)
 
     def seleccionar_padre(self):

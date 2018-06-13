@@ -12,7 +12,7 @@ class Recurso:
     def load_csv(filepath):
         r = []
         with open(filepath, newline='') as f:
-            sr = csv.reader(f, delimiter=';', quotechar='"')
+            sr = csv.reader(f, delimiter=',', quotechar='"')
             i = 0
             for row in sr:
                 i += 1

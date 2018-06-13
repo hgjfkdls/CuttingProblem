@@ -1,88 +1,136 @@
-import random
-
-from Poblacion import Poblacion
+from Requerimiento import *
 from Solucion import *
 
 
 class App:
-    def __init__(self):
-        ''''''
+    __version__ = '0.001.001'
+    filePath_requerimientos = None
+    filePath_recursos = None
+    requerimientos = None
+    recursos = None
+    barras = None
 
     @staticmethod
-    def genetico(poblacion, factor_cruce, factor_mutacion):
-        aux = poblacion.clone()
-        nueva_generacion = list()
-        # SELECCION NATURAL
-        for i in range(0, int(len(poblacion) / 2)):
-            index_1 = aux.seleccionar_padre()
-            padre_1 = aux.individuos.pop(index_1)
-            index_2 = aux.seleccionar_padre()
-            padre_2 = aux.individuos.pop(index_2)
-            # CRUZAMIENTO
-            if (App.dardo() < factor_cruce):
-                hijo_1, hijo_2 = App.cruzar(padre_1, padre_2)
-                # MUTACION
-                if (App.dardo() < factor_mutacion):
-                    hijo_1.mutar()
-                if (App.dardo() < factor_mutacion):
-                    hijo_2.mutar()
-                nueva_generacion.append(hijo_1)
-                nueva_generacion.append(hijo_2)
-            else:
-                nueva_generacion.append(padre_1)
-                nueva_generacion.append(padre_2)
-        return Poblacion(nueva_generacion)
+    def load_files(filePath_requerimientos: str, filePath_recursos: str):
+        App.filePath_requerimientos = filePath_requerimientos
+        App.filePath_recursos = filePath_recursos
+        App.requerimientos = Requerimiento.load_csv(filePath_requerimientos)
+        App.recursos = Recurso.load_csv(filePath_recursos)
+        App.barras = Barra.create(App.requerimientos)
 
     @staticmethod
-    def cruzar(solucion_1, solucion_2):
-        count = len(solucion_1)
-        hijo_1 = Solucion(solucion_1.barras[0:int(count * 0.5)], solucion_1.recurso)
-        hijo_2 = Solucion(solucion_2.barras[0:int(count * 0.5)], solucion_2.recurso)
-        for barra in solucion_2.barras:
-            if barra not in hijo_1.barras:
-                hijo_1.barras.append(barra)
-        for barra in solucion_1.barras:
-            if barra not in hijo_2.barras:
-                hijo_2.barras.append(barra)
-        hijo_1.calcular()
-        hijo_2.calcular()
-        return hijo_1, hijo_2
+    def calcular_solucion(recurso: Recurso) -> Solucion:
+        barras = [b for b in App.barras if b.diametro == recurso.diametro]
+        barras = sorted(barras, key=lambda b: b.largo, reverse=True)
+        requerimientos = [r for r in App.requerimientos if r.diametro == recurso.diametro]
+        solucion = Solucion(requerimientos, Barra.fn_heuristica_1(barras, recurso), recurso)
+        return solucion
 
     @staticmethod
-    def cruzar1(solucion_1, solucion_2):
-        s1 = solucion_1.clone()
-        s2 = solucion_2.clone()
-        hijo_1 = Solucion(list(), solucion_1.recurso)
-        hijo_2 = Solucion(list(), solucion_2.recurso)
-        for i in range(0, len(solucion_1)):
-
-            if i % 2 == 0:
-                hijo_1.barras.append(s1.pop(i))
-                hijo_2.barras.append(s1.pop(i))
-            else:
-                ''''''
-        hijo_1.calcular()
-        hijo_2.calcular()
-        return hijo_1, hijo_2
-
+    def print_soluciones():
+        print('{}'.format(' soluciones de heurística 1 '.center(80, '-')))
+        print('')
+        for r in App.recursos:
+            App.print_solucion(r)
 
     @staticmethod
-    def permutacion(solucion):
-        for i in range(len(solucion)):
-            if i % 2 == 0:
-                solucion[i], solucion[i + 1] = solucion[i + 1], solucion[i]
+    def print_solucion(recurso: Recurso):
+        solucion = App.calcular_solucion(recurso)
+        print('recurso     : {}'.format(recurso.id))
+        print('descripción : {}'.format(recurso.descripcion))
+        print('largo       : {}'.format(recurso.largo))
+        print('diámetro    : {}'.format(recurso.diametro))
+        print('beneficio   : {}'.format(solucion.beneficio))
+        print('cortes      : {}'.format(solucion.num_cortes))
+        print('barras      : {}'.format(solucion.num_barras))
+        print('')
+        App.print_tabla_requerimientos(solucion)
+        print('- solución:')
+        if len(solucion.barras) == 0:
+            print('')
+            print(' - No existen barras para este recurso.')
+            print('')
+            return
+        print('#tipo,largo,uso total,uso barra,num barra,merma,merma_acumulada')
+        n_barra = 0
+        corte: Barra
+        uso_total = 0
+        merma_acumuladada = 0
+        for barra in solucion.barras:
+            uso_barra = 0
+            n_barra += 1
+            for corte in barra:
+                uso_barra = round(uso_barra + corte.largo, 4)
+                uso_total = round(uso_total + corte.largo, 4)
+                merma = round(recurso.largo - uso_barra, 4)
+                if corte == barra[-1]:
+                    merma_acumuladada = round(merma_acumuladada + merma, 4)
+                    print('#{},{},{},{},{},{},{}'.format(corte.id_barra,
+                                                         corte.largo,
+                                                         uso_total,
+                                                         uso_barra,
+                                                         n_barra,
+                                                         merma,
+                                                         merma_acumuladada
+                                                         )
+                          )
+                else:
+                    print('#{},{},{},{},{},{},{}'.format(corte.id_barra,
+                                                         corte.largo,
+                                                         uso_total,
+                                                         uso_barra,
+                                                         '',
+                                                         '',
+                                                         ''
+                                                         )
+                          )
+        print('')
 
     @staticmethod
-    def random_sort(solucion):
-        s = list()
-        rng = list(range(0, len(solucion)))
-        c = len(rng)
-        for i in range(c):
-            a = len(rng) - 1
-            index = random.randint(0, a)
-            s.append(solucion[rng.pop(index)])
-        return s
+    def print_bienvenida():
+        print('{}'.format(' Optimizador de Acero '.center(80, '=')))
+        print('')
+        print('- autor   : Felipe Cabedo')
+        print('- mail    : fcabedov@gmail.com')
+        print('- version : {}'.format(App.__version__))
+        print('')
 
     @staticmethod
-    def dardo():
-        return float(random.randint(0, 100) / 1000)
+    def print_ficheros():
+        print('{}'.format(' ficheros de lectura '.center(80, '-')))
+        print('')
+        print('- requerimiento : {}'.format(App.filePath_requerimientos))
+        print('- recursos      : {}'.format(App.filePath_recursos))
+        print('')
+
+    @staticmethod
+    def print_tabla_recursos():
+        print('{}'.format(' tabla de recursos '.center(80, '-')))
+        print('')
+        print('#id,descripción,largo,diámetro')
+        for r in App.recursos:
+            print('#{},{},{},{}'.format(r.id, r.descripcion, r.largo, r.diametro))
+        print('')
+
+    @staticmethod
+    def print_tabla_requerimientos(solucion: Solucion):
+        print('- tabla de requerimientos:')
+        if solucion.num_cortes == 0:
+            print('')
+            print('  - No existen requerimientos para este recurso.')
+            print('')
+            return
+        print('#id,D,L,C,Lt,f1,f2,f3')
+        L = solucion.recurso.largo
+        Lt = L * solucion.num_cortes
+        r: Requerimiento
+        for r in solucion.requerimientos:
+            l = r.largo
+            d = r.diametro
+            c = r.cantidad
+            lt = l * c
+            f1 = lt / Lt
+            f2 = l / L
+            f3 = f1 / f2
+            print('#{},{},{},{},{},{},{},{}'.format(r.id, d, l, c, lt, f1, f2, f3))
+        print('')
